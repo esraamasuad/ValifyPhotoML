@@ -7,18 +7,31 @@
 //
 
 import UIKit
+import ValifyPhotoML
 
 class ViewController: UIViewController {
+    
+    @IBOutlet weak var userImage:UIImageView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-    }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
+     }
 
 }
 
+// MARK: - Actions [Take a photo] -
+
+extension ViewController {
+    
+    @IBAction func takePhotoAction(_ button: UIButton) {
+        
+        /// Use a framework to pick a photo
+        let picker = TakePhoto()
+        picker.didFinishPicking { [unowned picker] photo, _ in
+            self.userImage.image = photo
+            picker.dismiss(animated: true, completion: nil)
+        }
+        present(picker, animated: true, completion: nil)
+    }
+}

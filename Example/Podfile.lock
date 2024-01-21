@@ -1,0 +1,16 @@
+PODS:
+  - ValifyPhotoML (0.1.0)
+
+DEPENDENCIES:
+  - ValifyPhotoML (from `../`)
+
+EXTERNAL SOURCES:
+  ValifyPhotoML:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  ValifyPhotoML: ef3a04d3fb8c2fa4cdfecf0662b221e2c4de7ce4
+
+PODFILE CHECKSUM: 952cad01c5955a2bb670d917ed9746b940e28a21
+
+COCOAPODS: 1.14.3
