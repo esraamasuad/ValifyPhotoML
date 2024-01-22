@@ -1,7 +1,6 @@
 # ValifyPhotoML
 
-[![CI Status](https://img.shields.io/travis/esraa/ValifyPhotoML.svg?style=flat)](https://travis-ci.org/esraa/ValifyPhotoML)
-[![Version](https://img.shields.io/badge/Swift-0.1.0_0.1.1-orange?style=flat-square)](https://img.shields.io/badge/Swift-0.1.0_0.1.1-Orange?style=flat-square)
+[![Version](https://img.shields.io/badge/Version-0.1.0_0.1.1-orange?style=flat-square)](https://img.shields.io/badge/Version-0.1.0_0.1.1-Orange?style=flat-square)
 [![License](https://img.shields.io/cocoapods/l/ValifyPhotoML.svg?style=flat)](https://cocoapods.org/pods/ValifyPhotoML)
 [![Swift](https://img.shields.io/badge/Swift-5.0-orange?style=flat-square)](https://img.shields.io/badge/Swift-5.0-Orange?style=flat-square)
 [![Platforms](https://img.shields.io/badge/Platforms-iOS-yellowgreen?style=flat-square)](https://img.shields.io/badge/Platforms-iOS-Green?style=flat-square)
