@@ -115,7 +115,6 @@ extension CameraPickerView {
 
 extension CameraPickerView: AVCapturePhotoCaptureDelegate {
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        print("captureOutput => ")
         guard let frame = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             debugPrint("Unable to get image from the sample buffer")
             return

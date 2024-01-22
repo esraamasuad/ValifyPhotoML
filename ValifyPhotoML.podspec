@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
   s.platform = :ios, "11.0"
   s.ios.deployment_target = '11.0'
   s.swift_version = '5.0'
-  s.source_files = 'ValifyPhotoML/Classes/*.swift'
+  s.source_files = 'ValifyPhotoML/Classes/**/*'
   s.frameworks = 'UIKit'
 
   # s.resource_bundles = {

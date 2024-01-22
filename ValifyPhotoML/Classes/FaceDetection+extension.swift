@@ -16,11 +16,11 @@ extension CameraPickerView {
         let faceDetectionRequest = VNDetectFaceLandmarksRequest { vnRequest, error in
             DispatchQueue.main.async {
                 if let results = vnRequest.results as? [VNFaceObservation], results.count > 0 {
-                    print("✅ Detected \(results.count) faces!")
+//                    print("✅ Detected \(results.count) faces!")
                     self.handleFaceDetectionResults(observedFaces: results)
                     completion(true)
                 } else {
-                    print("❌ No face was detected")
+//                    print("❌ No face was detected")
                     self.clearDrawings()
                     completion(false)
                 }
