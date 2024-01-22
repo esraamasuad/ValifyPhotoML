@@ -8,35 +8,25 @@
 
 Pod::Spec.new do |s|
   s.name             = 'ValifyPhotoML'
-  s.version          = '0.1.0'
-  s.summary          = 'A short description of ValifyPhotoML.'
-
-# This description is used to generate tags and improve search results.
-#   * Think: What does it do? Why did you write it? What is the focus?
-#   * Try to keep it short, snappy and to the point.
-#   * Write the description between the DESC delimiters below.
-#   * Finally, don't worry about the indent, CocoaPods strips it!
-
-  s.description      = <<-DESC
-TODO: Add long description of the pod here.
-                       DESC
-
-  s.homepage         = 'https://github.com/esraa/ValifyPhotoML'
+  s.version          = '0.1.1'
+  s.summary          = 'Face detection by ValifyPhotoML.'
+  s.description      = 'By using ValifyPhotoML you can use your selfi camera to valify you identity.'
+  s.homepage         = 'https://github.com/esraamasuad/ValifyPhotoML'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'esraa' => 'esraa.masuad@gmail.com' }
-  s.source           = { :git => 'https://github.com/esraa/ValifyPhotoML.git', :tag => s.version.to_s }
+  s.source           = { :git => 'https://github.com/esraamasuad/ValifyPhotoML.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
+  s.platform = :ios, "11.0"
+  s.ios.deployment_target = '11.0'
+  s.swift_version = '5.0'
+  s.source_files = 'ValifyPhotoML/Classes/*.swift'
+  s.frameworks = 'UIKit'
 
-  s.ios.deployment_target = '10.0'
-
-  s.source_files = 'ValifyPhotoML/Classes/**/*'
-  
   # s.resource_bundles = {
   #   'ValifyPhotoML' => ['ValifyPhotoML/Assets/*.png']
   # }
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
-  # s.frameworks = 'UIKit', 'MapKit'
   # s.dependency 'AFNetworking', '~> 2.3'
 end

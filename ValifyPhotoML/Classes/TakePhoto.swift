@@ -36,11 +36,12 @@ public class TakePhoto: UINavigationController {
         print("Picker deinited 👍")
     }
     
+    private let cameraView = CameraPickerView()
+
     override open func viewDidLoad() {
         super.viewDidLoad()
         
         /// Add CameraView
-        let cameraView = CameraPickerView()
         cameraView.didPickPhoto = { [weak self] img in
             self?._didFinishPicking?(img, false)
         }

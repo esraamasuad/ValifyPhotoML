@@ -10,15 +10,21 @@ import AVFoundation
 
 class CameraPickerView: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
     
+    // MARK: - Variables -
+    
     /// delegates
     public var didClose:(() -> Void)?
     public var didPickPhoto: ((UIImage?) -> Void)?
     
     /// Settings
-    let captureSession = AVCaptureSession()
-    let output = AVCapturePhotoOutput()
-    var previewLayer:CALayer!
-    var captureDevice:AVCaptureDevice!
+    var drawings: [CAShapeLayer] = []
+    private let captureSession = AVCaptureSession()
+    var previewLayer:AVCaptureVideoPreviewLayer!
+    private var captureDevice:AVCaptureDevice!
+    
+    private let videoDataOutput = AVCaptureVideoDataOutput()
+        
+    private var isTakePhoto = false
     
     /// ShutterButton
     private let shutterButton: UIButton = {
@@ -30,7 +36,7 @@ class CameraPickerView: UIViewController, AVCaptureVideoDataOutputSampleBufferDe
     }()
     
     /// CancelButton
-    private let cancelButton: UIButton = {
+    fileprivate let cancelButton: UIButton = {
         let button = UIButton(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
         button.setTitle("Cancel", for: .normal)
         button.setTitleColor(.white, for: .normal)
@@ -48,7 +54,6 @@ class CameraPickerView: UIViewController, AVCaptureVideoDataOutputSampleBufferDe
         super.viewWillAppear(animated)
         /// check permissions
         checkCameraPermissions()
-        //        prepareCamera()
     }
     
     override func viewDidLayoutSubviews() {
@@ -98,7 +103,7 @@ class CameraPickerView: UIViewController, AVCaptureVideoDataOutputSampleBufferDe
 
 extension CameraPickerView {
     @objc private func didTapTakePhoto() {
-        output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+        isTakePhoto = true
     }
     
     @objc private func didCancel() {
@@ -106,37 +111,44 @@ extension CameraPickerView {
     }
 }
 
-//MARK: - AVCapturePhotoCaptureDelegate -
+//MARK: - AVCaptureVideoDataOutputSampleBufferDelegate -
 
 extension CameraPickerView: AVCapturePhotoCaptureDelegate {
-    public func photoOutput(_ output: AVCapturePhotoOutput, didCapturePhotoFor resolvedSettings: AVCaptureResolvedPhotoSettings) {
-        print("-")
-    }
-    
-    public func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
-        guard let data = photo.fileDataRepresentation() else {return}
-        
-        let image = UIImage(data: data)
-        self.stopCapureSession()
-        
-        /// Preview Picked Image
-        let previewPhotoView = PreviewPhotoView.initWith(image)
-        previewPhotoView.didConfirmPhoto = { [weak self] img in
-            self?.didPickPhoto?(img)
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        print("captureOutput => ")
+        guard let frame = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            debugPrint("Unable to get image from the sample buffer")
+            return
         }
-        navigationController?.pushViewController(previewPhotoView, animated: false)
-    }
-    
-    func stopCapureSession() {
-        /// Stop Session
-        captureSession.stopRunning()
-        if let inputs = captureSession.inputs as? [AVCaptureDeviceInput] {
-            for input in inputs {
-                self.captureSession.removeInput(input)
+        
+        /// detect the captured face
+        detectFace(image: frame, completion: { [weak self] isFace in
+            if self!.isTakePhoto {
+                self!.isTakePhoto = false
+                
+                if !isFace { return }
+                
+                // importat: - Stop the session
+                self?.stopCapureSession()
+                
+                DispatchQueue.main.async {
+                    //get a CIImage out of the CVImageBuffer
+                    let ciImage = CIImage(cvImageBuffer: frame)
+                    let image = UIImage(ciImage: ciImage)
+                    
+                    /// Preview Picked Image
+                    let previewPhotoView = PreviewPhotoView.initWith(image)
+                    previewPhotoView.didConfirmPhoto = { [weak self] img in
+                        self?.didPickPhoto?(img)
+                    }
+                    self?.navigationController?.pushViewController(previewPhotoView, animated: false)
+                }
             }
-        }
+        })
     }
 }
+
+//MARK: - Camera Settings -
 
 extension CameraPickerView {
     func prepareCamera() {
@@ -148,25 +160,63 @@ extension CameraPickerView {
     }
     
     func beginSession () {
+        /// addInput
+        getInputSettings()
+        /// preview layer
+        showCameraFeed()
+        /// start session
+        captureSession.startRunning()
+        /// PreviewLayer
+        getCameraFrames()
+        
+        captureSession.commitConfiguration()
+    }
+    
+    private func getInputSettings() {
         do {
             let captureDeviceInput = try AVCaptureDeviceInput(device: captureDevice)
             captureSession.addInput(captureDeviceInput)
         }catch {
             print(error.localizedDescription)
         }
-        
+    }
+    
+    private func showCameraFeed() {
         let previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
         self.previewLayer = previewLayer
         self.view.layer.addSublayer(self.previewLayer)
         self.previewLayer.frame = self.view.layer.frame
-        captureSession.startRunning()
+    }
+    
+    private func getCameraFrames() {
+        videoDataOutput.videoSettings = [(kCVPixelBufferPixelFormatTypeKey as NSString): NSNumber(value: kCVPixelFormatType_32BGRA)] as [String: Any]
         
-        if captureSession.canAddOutput(output) {
-            captureSession.addOutput(output)
+        videoDataOutput.alwaysDiscardsLateVideoFrames = true
+        // You do not want to process the frames on the Main Thread so we off load to another thread
+        let queue = DispatchQueue(label: "camera_frame_processing_queue")
+        videoDataOutput.setSampleBufferDelegate(self, queue: queue)
+        
+        captureSession.addOutput(videoDataOutput)
+        
+        guard let connection = videoDataOutput.connection(with: .video), connection.isVideoOrientationSupported else {
+            return
         }
-        captureSession.commitConfiguration()
-        
-        //        let queue = DispatchQueue(label: "com.brianadvent.captureQueue")
-        //        dataOutput.setSampleBufferDelegate(self, queue: queue)
+        connection.videoOrientation = .portrait
+        connection.isVideoMirrored = true
+    }
+    
+    /// Stop Session + remove input & output
+    func stopCapureSession() {
+        captureSession.stopRunning()
+        if let inputs = captureSession.inputs as? [AVCaptureDeviceInput] {
+            for input in inputs {
+                self.captureSession.removeInput(input)
+            }
+        }
+        if let outputs = captureSession.outputs as? [AVCaptureVideoDataOutput] {
+            for output in outputs {
+                self.captureSession.removeOutput(output)
+            }
+        }
     }
 }

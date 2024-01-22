@@ -11,13 +11,13 @@ import ValifyPhotoML
 
 class ViewController: UIViewController {
     
+    /// Outlet
     @IBOutlet weak var userImage:UIImageView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        title = "Home"
      }
-
 }
 
 // MARK: - Actions [Take a photo] -
